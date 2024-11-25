@@ -1,0 +1,145 @@
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local lockOnTarget = nil  -- To store the target we are locked onto
+
+-- Create the GUI for lock-on
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local lockOnLabel = Instance.new("TextLabel")
+lockOnLabel.Size = UDim2.new(0, 200, 0, 50)
+lockOnLabel.Position = UDim2.new(0.5, -100, 0.1, 0)
+lockOnLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+lockOnLabel.BackgroundTransparency = 1
+lockOnLabel.TextSize = 20
+lockOnLabel.Parent = screenGui
+lockOnLabel.Text = "Locked On: None"  -- Default text
+
+-- Create toggles for abilities
+local abilityToggles = {
+    Throw = false,
+    RightBlast = false,
+    LeftBlast = false,
+    LeftIcicle = false,
+    RightIcicle = false,
+    FireBlast = false,
+    FalloutRightBlast = false,
+    FalloutLeftBlast = false,
+    LightBlast = false
+}
+
+local function createToggleButton(name, positionY)
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Size = UDim2.new(0, 200, 0, 50)
+    toggleLabel.Position = UDim2.new(0.5, -100, 0.2 + positionY * 0.06, 0)
+    toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.TextSize = 18
+    toggleLabel.Parent = screenGui
+    toggleLabel.Text = name
+
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0, 50, 0, 25)
+    toggleButton.Position = UDim2.new(0.5, 50, 0.2 + positionY * 0.06, 0)
+    toggleButton.Text = "Off"
+    toggleButton.TextSize = 14
+    toggleButton.Parent = screenGui
+    toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        abilityToggles[name] = not abilityToggles[name]
+        if abilityToggles[name] then
+            toggleButton.Text = "On"
+            toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        else
+            toggleButton.Text = "Off"
+            toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end)
+end
+
+-- Create toggles for each ability
+createToggleButton("Throw", 0)
+createToggleButton("RightBlast", 1)
+createToggleButton("LeftBlast", 2)
+createToggleButton("LeftIcicle", 3)
+createToggleButton("RightIcicle", 4)
+createToggleButton("FireBlast", 5)
+createToggleButton("Fallout Right Blast", 6)
+createToggleButton("Fallout Left Blast", 7)
+createToggleButton("LightBlast", 8)
+
+-- Lock-on function: Check for humanoid under mouse
+local function checkLockOn()
+    local hit = mouse.Target
+    if hit and hit.Parent then
+        local humanoid = hit.Parent:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            lockOnTarget = hit.Parent  -- Lock onto the humanoid's parent
+            lockOnLabel.Text = "Locked On: " .. hit.Parent.Name  -- Update the label with the locked target's name
+        end
+    end
+end
+
+-- K keybind to lock onto a target
+mouse.KeyDown:Connect(function(key)
+    if key == "k" then
+        checkLockOn()
+    end
+end)
+
+-- L keybind to fire the selected abilities
+mouse.KeyDown:Connect(function(key)
+    if key == "l" and lockOnTarget then
+        local head = lockOnTarget:FindFirstChild("HumanoidRootPart")
+        if head then
+            local pos = head.Position  -- Use the position of the head of the locked target
+            
+            -- Loop through all abilities and fire the ones that are toggled on
+            if abilityToggles.Throw then
+                local Event = game:GetService("ReplicatedStorage").Characters.Speedsters.Throw
+                Event:FireServer(Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.RightBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.Vibe.Core
+                Event:FireServer("RightBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.LeftBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.Vibe.Core
+                Event:FireServer("LeftBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.LeftIcicle then
+                local Event = game:GetService("ReplicatedStorage").Characters.KillerFrost.Core
+                Event:FireServer("LeftIcicle", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.RightIcicle then
+                local Event = game:GetService("ReplicatedStorage").Characters.KillerFrost.Core
+                Event:FireServer("RightIcicle", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.FireBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.Firestorm.Core
+                Event:FireServer("FireBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.FalloutRightBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.Fallout.Core
+                Event:FireServer("RightBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.FalloutLeftBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.Fallout.Core
+                Event:FireServer("LeftBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+
+            if abilityToggles.LightBlast then
+                local Event = game:GetService("ReplicatedStorage").Characters.DrLight.Core
+                Event:FireServer("LightBlast", Vector3.new(pos.x, pos.y, pos.z))
+            end
+        end
+    end
+end)
